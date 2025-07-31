@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -7,99 +6,172 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Like;
 use App\Models\Comment;
 use App\Models\User;
+use App\Models\Berita;
+use App\Models\History;
 
 class HomeController extends Controller
 {
-    protected $semua_berita = [
-        1 => [
-            'id' => 1,
-            'judul' => 'Berita A',
-            'kategori' => 'Politik',
-            'tanggal' => '14 May 2025',
-            'gambar' => '/images/news1.jpg',
-            'isi' => "Isi berita A..."
-        ],
-        2 => [
-            'id' => 2,
-            'judul' => 'Berita B',
-            'kategori' => 'Bisnis',
-            'tanggal' => '15 May 2025',
-            'gambar' => '/images/news2.jpg',
-            'isi' => "Isi berita B..."
-        ],
-        3 => [
-            'id' => 3,
-            'judul' => 'Berita C',
-            'kategori' => 'Teknologi',
-            'tanggal' => '16 May 2025',
-            'gambar' => '/images/history1.jpg',
-            'isi' => "Isi berita C..."
-        ],
-    ];
-
     public function index()
     {
-        $berita_terkini = [
-            ['judul' => 'Berita A', 'tanggal' => '2025-06-02', 'gambar' => 'news1.jpg'],
-            ['judul' => 'Berita B', 'tanggal' => '2025-06-01', 'gambar' => 'news2.jpg']
-        ];
+        // Ambil berita terkini (5 berita terbaru)
+        $berita_terkini = Berita::latest()
+                                ->take(5)
+                                ->get();
 
-        return view('beranda', compact('berita_terkini'));
+        // Ambil berita yang paling sering dibaca (berdasarkan history) untuk section history
+        $berita_history = collect();
+
+        if (Auth::check()) {
+            // Jika user login, ambil history user tersebut
+            $historyIds = \DB::table('histories')
+                ->select('berita_id', \DB::raw('COUNT(*) as total'))
+                ->where('user_id', Auth::id())
+                ->groupBy('berita_id')
+                ->orderBy('total', 'DESC')
+                ->limit(3)
+                ->pluck('berita_id');
+
+            if ($historyIds->isNotEmpty()) {
+                $berita_history = Berita::whereIn('id', $historyIds)
+                    ->orderByRaw('FIELD(id, ' . $historyIds->implode(',') . ')')
+                    ->get();
+            }
+        } else {
+            // Jika guest, ambil berita yang paling sering dibaca secara umum
+            $historyIds = \DB::table('histories')
+                ->select('berita_id', \DB::raw('COUNT(*) as total'))
+                ->groupBy('berita_id')
+                ->orderBy('total', 'DESC')
+                ->limit(3)
+                ->pluck('berita_id');
+
+            if ($historyIds->isNotEmpty()) {
+                $berita_history = Berita::whereIn('id', $historyIds)
+                    ->orderByRaw('FIELD(id, ' . $historyIds->implode(',') . ')')
+                    ->get();
+            }
+        }
+
+        // Jika history kosong, ambil berita random
+        if ($berita_history->isEmpty()) {
+            $berita_history = Berita::inRandomOrder()->take(3)->get();
+        }
+
+        return view('beranda', compact('berita_terkini', 'berita_history'));
     }
 
     public function kategori($kategori)
     {
         // Validasi kategori
         $kategoriList = ['politik', 'bisnis', 'teknologi', 'kesehatan', 'olahraga'];
-        if (!in_array($kategori, $kategoriList)) {
+        if (!in_array(strtolower($kategori), $kategoriList)) {
             abort(404); // Jika kategori tidak valid
         }
 
         // Ambil berita berdasarkan kategori
-        $berita = \App\Models\Berita::where('kategori', $kategori)
-                    ->latest()
-                    ->get();
+        $berita = Berita::where('kategori', strtolower($kategori))
+                        ->latest()
+                        ->paginate(10); // Tambahkan pagination untuk performa yang lebih baik
 
         return view('kategori', compact('berita', 'kategori'));
     }
 
     public function detail($id)
     {
-        if (!isset($this->semua_berita[$id])) {
-            abort(404);
+        // Ambil berita berdasarkan ID
+        $berita = Berita::findOrFail($id);
+
+        // Simpan ke history jika user login
+        if (Auth::check()) {
+            // Cek apakah user sudah pernah membaca berita ini hari ini
+            $today = now()->toDateString();
+            $existingHistory = History::where('user_id', Auth::id())
+                                     ->where('berita_id', $id)
+                                     ->whereDate('created_at', $today)
+                                     ->first();
+
+            // Jika belum ada history hari ini, buat entry baru
+            if (!$existingHistory) {
+                History::create([
+                    'user_id' => Auth::id(),
+                    'berita_id' => $id,
+                    // timestamp akan otomatis diisi oleh Laravel jika ada created_at/updated_at
+                ]);
+            }
         }
 
-        $berita = $this->semua_berita[$id];
-        $berita['id'] = $id;
-
+        // Hitung jumlah like untuk berita ini
         $jumlah_like = Like::where('berita_id', $id)->count();
-        $komentar = Comment::where('berita_id', $id)->latest()->get();
 
-        return view('detail', compact('berita', 'jumlah_like', 'komentar'));
+        // Ambil komentar untuk berita ini dengan informasi user
+        $komentar = Comment::where('berita_id', $id)
+                          ->with('user') // Eager loading untuk mendapatkan data user
+                          ->latest()
+                          ->get();
+
+        // Cek apakah user sudah like berita ini (jika user login)
+        $sudah_like = false;
+        if (Auth::check()) {
+            $sudah_like = Like::where('user_id', Auth::id())
+                             ->where('berita_id', $id)
+                             ->exists();
+        }
+
+        return view('detail', compact('berita', 'jumlah_like', 'komentar', 'sudah_like'));
     }
 
     public function like($id)
     {
+        // Pastikan user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu');
+        }
+
         $user = Auth::user();
 
-        $alreadyLiked = Like::where('user_id', $user->id)->where('berita_id', $id)->first();
+        // Pastikan berita exists
+        $berita = Berita::findOrFail($id);
+
+        // Cek apakah user sudah like berita ini
+        $alreadyLiked = Like::where('user_id', $user->id)
+                           ->where('berita_id', $id)
+                           ->first();
 
         if (!$alreadyLiked) {
             Like::create([
                 'user_id' => $user->id,
                 'berita_id' => $id,
             ]);
+            $message = 'Berita disukai!';
+        } else {
+            // Opsional: Jika ingin toggle like/unlike
+            $alreadyLiked->delete();
+            $message = 'Like dibatalkan!';
         }
 
-        return back()->with('success', 'Berita disukai!');
+        return back()->with('success', $message);
     }
 
     public function comment(Request $request, $id)
     {
+        // Pastikan user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu');
+        }
+
+        // Validasi input
         $request->validate([
-            'komentar' => 'required|string'
+            'komentar' => 'required|string|min:1|max:1000'
+        ], [
+            'komentar.required' => 'Komentar tidak boleh kosong.',
+            'komentar.min' => 'Komentar minimal 1 karakter.',
+            'komentar.max' => 'Komentar maksimal 1000 karakter.'
         ]);
 
+        // Pastikan berita exists
+        $berita = Berita::findOrFail($id);
+
+        // Buat komentar baru
         Comment::create([
             'user_id' => Auth::id(),
             'berita_id' => $id,
@@ -107,5 +179,32 @@ class HomeController extends Controller
         ]);
 
         return back()->with('success', 'Komentar berhasil dikirim.');
+    }
+
+    // Method tambahan untuk pencarian berita
+    public function search(Request $request)
+    {
+        $query = $request->get('q');
+
+        if (empty($query)) {
+            return redirect()->route('home');
+        }
+
+        $berita = Berita::where('judul', 'LIKE', '%' . $query . '%')
+                        ->orWhere('isi', 'LIKE', '%' . $query . '%')
+                        ->latest()
+                        ->paginate(10);
+
+        return view('search', compact('berita', 'query'));
+    }
+
+    // Method untuk menampilkan berita berdasarkan tag (jika ada)
+    public function tag($tag)
+    {
+        $berita = Berita::where('tags', 'LIKE', '%' . $tag . '%')
+                        ->latest()
+                        ->paginate(10);
+
+        return view('tag', compact('berita', 'tag'));
     }
 }

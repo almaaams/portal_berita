@@ -70,7 +70,7 @@
 <div class="detail-container">
   <div class="detail-title">{{ $berita['judul'] }}</div>
   <div class="detail-meta">{{ $berita['kategori'] }} &nbsp;&nbsp; {{ $berita['tanggal'] }}</div>
-  <img src="{{ $berita['gambar'] }}" alt="Gambar Berita" class="detail-image">
+  <img src="{{ asset('storage/' . $berita->gambar) }}" alt="Gambar Berita" class="detail-image">
   <div class="detail-content">{{ $berita['isi'] }}</div>
 
   <div class="detail-footer">

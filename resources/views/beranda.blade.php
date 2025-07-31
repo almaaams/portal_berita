@@ -151,39 +151,38 @@
 </style>
 
 <div class="hero-section">
-  <h1>JUDUL BERITA</h1>
-  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse dapibus est a nisi tempus convallis.</p>
-  <a href="{{ route('berita.detail', ['id' => 1]) }}">Baca Selengkapnya</a>
+  <h1>WELCOME</h1>
+  <p>Selamat datang di portal berita!</p>
 </div>
 
 <div class="kategori-section" id="kategori">
   <h2>Kategori</h2>
   <div class="kategori-grid">
-    <a href="{{ route('kategori.show', 'Politik') }}" style="text-decoration: none;">
+    <a href="{{ route('kategori.show', 'politik') }}" style="text-decoration: none;">
       <div class="kategori-card" style="background-image: url('/images/kategori/politik.jpg');">
         <span>Politik</span>
       </div>
     </a>
 
-    <a href="{{ route('kategori.show', 'Bisnis') }}">
+    <a href="{{ route('kategori.show', 'bisnis') }}" style="text-decoration: none;">
       <div class="kategori-card" style="background-image: url('/images/kategori/bisnis.jpg');">
         <span>Bisnis</span>
       </div>
     </a>
 
-    <a href="{{ route('kategori.show', 'Teknologi') }}">
+    <a href="{{ route('kategori.show', 'teknologi') }}" style="text-decoration: none;">
       <div class="kategori-card" style="background-image: url('/images/kategori/teknologi.jpg');">
         <span>Teknologi</span>
       </div>
     </a>
 
-    <a href="{{ route('kategori.show', 'Kesehatan') }}">
+    <a href="{{ route('kategori.show', 'kesehatan') }}" style="text-decoration: none;">
       <div class="kategori-card" style="background-image: url('/images/kategori/kesehatan.jpg');">
         <span>Kesehatan</span>
       </div>
     </a>
 
-    <a href="{{ route('kategori.show', 'Olahraga') }}">
+    <a href="{{ route('kategori.show', 'olahraga') }}" style="text-decoration: none;">
       <div class="kategori-card" style="background-image: url('/images/kategori/olahraga.jpg');">
         <span>Olahraga</span>
       </div>
@@ -192,60 +191,91 @@
 </div>
 
 <div class="trending-section" id="trending">
-  <h2>Trending</h2>
-  <div class="trending-item">
-    <img src="/images/news1.jpg" alt="">
-    <div class="text">
-      <h3>
-        <a href="{{ route('berita.detail', ['id' => 1]) }}" style="color: white; text-decoration: none;">
-          Judul Berita
-        </a>
-      </h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-      <p>14 May 2025</p>
-    </div>
-  </div>
+  <h2>Terbaru</h2>
 
+  @forelse($berita_terkini->take(2) as $berita)
   <div class="trending-item">
-    <img src="/images/news2.jpg" alt="">
+    <img src="{{ asset('storage/' . $berita->gambar) }}" alt="{{ $berita->judul }}" onerror="this.src='/images/placeholder.jpg'">
     <div class="text">
       <h3>
-        <a href="{{ route('berita.detail', ['id' => 1]) }}" style="color: white; text-decoration: none;">
-        Judul Berita
+        <a href="{{ route('berita.detail', $berita->id) }}" style="color: white; text-decoration: none;">
+          {{ $berita->judul }}
         </a>
       </h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-      <p>14 May 2025</p>
+      <p>{{ Str::limit(strip_tags($berita->isi), 100) }}</p>
+      <p>{{ $berita->created_at->format('d M Y') }}</p>
     </div>
   </div>
+  @empty
+  <div class="trending-item">
+    <img src="/images/placeholder.jpg" alt="No Image">
+    <div class="text">
+      <h3>
+        <a href="#" style="color: white; text-decoration: none;">
+          Belum ada berita tersedia
+        </a>
+      </h3>
+      <p>Silakan kembali lagi nanti untuk membaca berita terbaru.</p>
+      <p>{{ date('d M Y') }}</p>
+    </div>
+  </div>
+  @endforelse
 </div>
 
 <div class="history-section" id="history">
-  <h2>History</h2>
+  <h2>
+    @auth
+      Berdasarkan Riwayat Anda
+    @else
+      Populer
+    @endauth
+  </h2>
   <div class="history-container">
     <div class="history-left">
-      <a href="{{ route('berita.detail', ['id' => 3]) }}">
-        <img src="/images/history1.jpg" alt="" style="width: 100%; border-radius: 10px;">
-      </a>
-      <h3><a href="{{ route('berita.detail', ['id' => 3]) }}" style="color:white; text-decoration:none;">Judul Berita</a></h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      @if($berita_history->count() > 0)
+        @php $featuredBerita = $berita_history->first(); @endphp
+        <a href="{{ route('berita.detail', $featuredBerita->id) }}">
+          <img src="{{ asset('storage/' . $featuredBerita->gambar) }}" alt="{{ $featuredBerita->judul }}" style="width: 100%; border-radius: 10px;" onerror="this.src='/images/placeholder.jpg'">
+        </a>
+        <h3><a href="{{ route('berita.detail', $featuredBerita->id) }}" style="color:white; text-decoration:none;">{{ $featuredBerita->judul }}</a></h3>
+        <p>{{ Str::limit(strip_tags($featuredBerita->isi), 120) }}</p>
+        <p><small>{{ $featuredBerita->created_at->format('d M Y') }}</small></p>
+      @else
+        <img src="/images/placeholder.jpg" alt="No Image" style="width: 100%; border-radius: 10px;">
+        <h3><a href="#" style="color:white; text-decoration:none;">Belum ada history</a></h3>
+        <p>
+          @auth
+            Mulai membaca berita untuk melihat rekomendasi berdasarkan riwayat Anda.
+          @else
+            Silakan login untuk melihat rekomendasi berdasarkan riwayat bacaan Anda.
+          @endauth
+        </p>
+      @endif
     </div>
+
     <div class="history-right">
-      <div class="history-item">
-        <img src="/images/history2.jpg" alt="">
-        <div class="text">
-          <h3><a href="{{ route('berita.detail', ['id' => 4]) }}" style="color:white; text-decoration:none;">Judul Berita</a></h3>
-          <p>16 May 2025</p>
+      @if($berita_history->count() > 1)
+        @foreach($berita_history->skip(1)->take(2) as $berita)
+        <div class="history-item">
+          <img src="{{ asset('storage/' . $berita->gambar) }}" alt="{{ $berita->judul }}" onerror="this.src='/images/placeholder.jpg'">
+          <div class="text">
+            <h3><a href="{{ route('berita.detail', $berita->id) }}" style="color:white; text-decoration:none;">{{ Str::limit($berita->judul, 60) }}</a></h3>
+            <p>{{ $berita->created_at->format('d M Y') }}</p>
+            <p><small>{{ ucfirst($berita->kategori) }}</small></p>
+          </div>
         </div>
-      </div>
-      <div class="history-item">
-        <img src="/images/history3.jpg" alt="">
-        <div class="text">
-          <h3><a href="{{ route('berita.detail', ['id' => 5]) }}" style="color:white; text-decoration:none;">Judul Berita</a></h3>
-          <p>16 May 2025</p>
+        @endforeach
+      @else
+        <div class="history-item">
+          <img src="/images/placeholder.jpg" alt="No Image">
+          <div class="text">
+            <h3><a href="#" style="color:white; text-decoration:none;">Belum ada berita lainnya</a></h3>
+            <p>{{ date('d M Y') }}</p>
+          </div>
         </div>
-      </div>
-      <a href="#" class="more-button">More ></a>
+      @endif
+
+      <a href="{{ route('kategori.show', 'semua') }}" class="more-button">More ></a>
     </div>
   </div>
 </div>
