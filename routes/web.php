@@ -32,6 +32,8 @@ Route::get('/kategori', function () {
 Route::get('/kategori/{kategori}', [HomeController::class, 'kategori'])->name('berita.kategori');
 Route::get('/kategori/{kategori}', [App\Http\Controllers\HomeController::class, 'kategori'])->name('kategori.show');
 
+Route::get('/history', [HomeController::class, 'allHistory'])->name('history.all');
+
 Route::post('/berita/{id}/like', [HomeController::class, 'like'])->name('berita.like')->middleware('auth');
 Route::post('/berita/{id}/comment', [HomeController::class, 'comment'])->name('berita.comment')->middleware('auth');
 

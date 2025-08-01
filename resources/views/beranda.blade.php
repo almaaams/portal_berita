@@ -225,7 +225,7 @@
 <div class="history-section" id="history">
   <h2>
     @auth
-      Berdasarkan Riwayat Anda
+      History
     @else
       Populer
     @endauth
@@ -275,7 +275,7 @@
         </div>
       @endif
 
-      <a href="{{ route('kategori.show', 'semua') }}" class="more-button">More ></a>
+      <a href="{{ route('history.all') }}" class="more-button">More ></a>
     </div>
   </div>
 </div>

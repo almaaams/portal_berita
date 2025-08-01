@@ -207,4 +207,26 @@ class HomeController extends Controller
 
         return view('tag', compact('berita', 'tag'));
     }
+
+    public function allHistory()
+    {
+        if (Auth::check()) {
+            // Ambil semua berita dari history user
+            $historyIds = \DB::table('histories')
+                ->select('berita_id', \DB::raw('COUNT(*) as total'))
+                ->where('user_id', Auth::id())
+                ->groupBy('berita_id')
+                ->orderBy('total', 'DESC')
+                ->pluck('berita_id');
+
+            $berita = Berita::whereIn('id', $historyIds)
+                            ->orderByRaw('FIELD(id, ' . $historyIds->implode(',') . ')')
+                            ->paginate(10);
+        } else {
+            // Random populer untuk guest
+            $berita = Berita::inRandomOrder()->paginate(10);
+        }
+
+        return view('history', compact('berita'));
+    }
 }
