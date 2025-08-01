@@ -36,14 +36,33 @@
 
   .detail-footer {
     display: flex;
-    gap: 20px;
+    gap: 15px;
     font-size: 14px;
-    color: #ccc;
     align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
   }
 
-  .detail-footer form {
-    display: inline;
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 30px;
+    border: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .action-button i {
+    margin-right: 6px;
+  }
+
+  .action-button:hover {
+    background: linear-gradient(145deg, #4e4e4e, #1c1c1c);
+    transform: translateY(-2px);
   }
 
   .comment-box {
@@ -77,22 +96,28 @@
     @auth
       <form action="{{ route('berita.like', $berita['id']) }}" method="POST">
         @csrf
-        <button type="submit" style="background: none; border: none; color: #ccc;">
-          <i class="fa-regular fa-heart"></i> Like ({{ $jumlah_like }})
+        <button type="submit" class="action-button">
+          <i class="fa-regular fa-heart"></i> Suka ({{ $jumlah_like }})
         </button>
       </form>
     @else
-      <div><i class="fa-regular fa-heart"></i> Login to Like ({{ $jumlah_like }})</div>
+      <div class="action-button" style="background: #444; cursor: default;">
+        <i class="fa-regular fa-heart"></i> Login untuk Like ({{ $jumlah_like }})
+      </div>
     @endauth
 
-    <div onclick="copyLink('{{ url()->current() }}')">
-      <i class="fa-solid fa-share-nodes"></i> Share
+    <div class="action-button" onclick="copyLink('{{ url()->current() }}')">
+      <i class="fa-solid fa-share-nodes"></i> Bagikan
     </div>
 
     @auth
-      <a href="#comment-section"><i class="fa-regular fa-comment"></i> Comment</a>
+      <a href="#comment-section" class="action-button">
+        <i class="fa-regular fa-comment"></i> Komentar
+      </a>
     @else
-      <div><i class="fa-regular fa-comment"></i> Login to Comment</div>
+      <div class="action-button" style="background: #444; cursor: default;">
+        <i class="fa-regular fa-comment"></i> Login untuk Komentar
+      </div>
     @endauth
   </div>
 
@@ -112,7 +137,8 @@
       <h4 style="color: white; margin-bottom: 15px;">Komentar</h4>
       @foreach($komentar as $komen)
         <div style="margin-bottom: 20px; background-color: #222; padding: 10px 15px; border-radius: 8px;">
-          <strong>{{ $komen->user->name }}</strong> <small style="color: #aaa;">{{ $komen->created_at->diffForHumans() }}</small>
+          <strong>{{ $komen->user->username }}</strong> 
+          <small style="color: #aaa;">{{ $komen->created_at->diffForHumans() }}</small>
           <p style="margin-top: 5px;">{{ $komen->isi }}</p>
         </div>
       @endforeach
@@ -123,7 +149,7 @@
 <script>
   function copyLink(link) {
     navigator.clipboard.writeText(link).then(() => {
-      alert("Link copied to clipboard!");
+      alert("Link berhasil disalin!");
     });
   }
 </script>

@@ -42,6 +42,20 @@
     background-color: #2779bd;
   }
 
+  .edit-btn {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 15px;
+  }
+
+  .edit-btn:hover {
+    background-color: #e67e22;
+  }
+
   .section-divider {
     margin-top: 40px;
     margin-bottom: 20px;
@@ -85,38 +99,41 @@
     </div>
   @endif
 
+  {{-- Tombol Edit Profil --}}
+  <button type="button" class="edit-btn" onclick="enableEdit()">Edit Profil</button>
+
   {{-- Form Update Profile --}}
   <form method="POST" action="{{ route('profile.update') }}">
     @csrf
 
     <div class="form-group">
       <label class="form-label">Username</label>
-      <input type="text" name="username" class="form-input" value="{{ $user->username }}" required>
+      <input type="text" name="username" class="form-input" value="{{ $user->username }}" required disabled>
     </div>
 
     <div class="form-group">
       <label class="form-label">Email</label>
-      <input type="email" name="email" class="form-input" value="{{ $user->email }}" required>
+      <input type="email" name="email" class="form-input" value="{{ $user->email }}" required disabled>
     </div>
 
     <div class="form-group">
       <label class="form-label">Nama Depan</label>
-      <input type="text" name="first_name" class="form-input" value="{{ $user->first_name }}" required>
+      <input type="text" name="first_name" class="form-input" value="{{ $user->first_name }}" required disabled>
     </div>
 
     <div class="form-group">
       <label class="form-label">Nama Belakang</label>
-      <input type="text" name="last_name" class="form-input" value="{{ $user->last_name }}" required>
+      <input type="text" name="last_name" class="form-input" value="{{ $user->last_name }}" required disabled>
     </div>
 
     <div class="form-group">
       <label class="form-label">Password (kosongkan jika tidak ingin diubah)</label>
-      <input type="password" name="password" class="form-input">
+      <input type="password" name="password" class="form-input" disabled>
     </div>
 
     <input type="hidden" name="role" value="{{ $user->role }}">
 
-    <button type="submit" class="save-btn">Simpan Perubahan</button>
+    <button type="submit" class="save-btn" disabled id="submitBtn">Simpan Perubahan</button>
   </form>
 
   {{-- Form Upload Berita --}}
@@ -173,7 +190,9 @@
             @if($item->gambar)
               <img src="{{ asset('storage/' . $item->gambar) }}" alt="Gambar Berita" class="gambar-berita">
             @endif
-            <a href="{{ route('berita.detail', $item->id) }}" style="color: #3490dc;">Lihat Detail</a>
+            <a href="{{ route('berita.detail', $item->id) }}" style="color: #3490dc; font-weight: bold; text-decoration: none;">
+              📖 Baca Selengkapnya
+            </a>
           </div>
         @endforeach
       @endforeach
@@ -182,4 +201,13 @@
     @endif
   @endif
 </div>
+
+<script>
+  function enableEdit() {
+    const inputs = document.querySelectorAll('form input, form textarea');
+    inputs.forEach(input => input.disabled = false);
+
+    document.getElementById('submitBtn').disabled = false;
+  }
+</script>
 @endsection
