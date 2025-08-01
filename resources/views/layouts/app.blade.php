@@ -69,11 +69,15 @@
       <strong>Sport<span style="color: white">News</span></strong>
       <a href="/">Beranda</a>
       <a href="#kategori">Kategori</a>
-      <a href="#trending">Trending</a>
+      <a href="#trending">Terbaru</a>
       <a href="#history">History</a>
     </div>
     <div class="navbar-right">
-      <input type="text" class="search-input" placeholder="Search">
+      <!-- <input type="text" class="search-input" placeholder="Search"> -->
+      <form action="{{ route('search') }}" method="GET" style="display: flex; align-items: center;">
+        <input type="text" name="q" class="search-input" placeholder="Search..." value="{{ request('q') }}">
+      </form>
+
 
       @auth
         <a href="/profile" style="color:white; text-decoration:none;">Profile</a>

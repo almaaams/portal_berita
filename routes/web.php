@@ -41,3 +41,5 @@ Route::get('/berita/{id}', [HomeController::class, 'detail'])->name('berita.deta
 Route::get('/berita/{id}', [App\Http\Controllers\HomeController::class, 'detail'])->name('berita.detail');
 
 Route::post('/berita/upload', [ProfileController::class, 'uploadBerita'])->name('berita.upload');
+
+Route::get('/search', [HomeController::class, 'search'])->name('search');
