@@ -193,6 +193,11 @@
             <a href="{{ route('berita.detail', $item->id) }}" style="color: #3490dc; font-weight: bold; text-decoration: none;">
               📖 Baca Selengkapnya
             </a>
+            <form action="{{ route('berita.destroy', $item->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete(event, '{{ $item->judul }}')">
+              @csrf
+              @method('DELETE')
+              <button type="submit" class="edit-btn" style="background-color: #e74c3c;">🗑 Hapus</button>
+            </form>
           </div>
         @endforeach
       @endforeach
@@ -208,6 +213,16 @@
     inputs.forEach(input => input.disabled = false);
 
     document.getElementById('submitBtn').disabled = false;
+  }
+  
+  function confirmDelete(event, judul) {
+    event.preventDefault();
+
+    if (confirm(`Apakah Anda yakin ingin menghapus berita: "${judul}"? Tindakan ini tidak dapat dibatalkan.`)) {
+      event.target.submit();
+    }
+
+    return false;
   }
 </script>
 @endsection

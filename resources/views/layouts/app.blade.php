@@ -66,7 +66,7 @@
 <body>
   <div class="navbar">
     <div class="navbar-left">
-      <strong>Sport<span style="color: white">News</span></strong>
+      <strong><span style="color: white">News</span></strong>
       <a href="/">Beranda</a>
       <a href="#kategori">Kategori</a>
       <a href="#trending">Terbaru</a>

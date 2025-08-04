@@ -79,4 +79,17 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.show')->with('success', 'Berita berhasil diunggah!');
     }
+    public function destroy($id)
+    {
+        $berita = Berita::findOrFail($id);
+
+        // Hapus gambar jika ada
+        if ($berita->gambar && Storage::exists('public/' . $berita->gambar)) {
+            Storage::delete('public/' . $berita->gambar);
+        }
+
+        $berita->delete();
+
+        return redirect()->back()->with('success', 'Berita berhasil dihapus.');
+    }
 }
