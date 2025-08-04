@@ -35,14 +35,14 @@
     width: fit-content;
   }
 
-  .kategori-section, .trending-section, .history-section {
+  .kategori-section, .terbaru-section, .history-section {
     padding: 60px 40px;
     background-color: black;
     color: white;
   }
 
   .kategori-section h2,
-  .trending-section h2,
+  .terbaru-section h2,
   .history-section h2 {
     font-size: 32px;
     margin-bottom: 30px;
@@ -90,13 +90,13 @@
     z-index: 2;
   }
 
-  .trending-item, .history-item {
+  .terbaru-item, .history-item {
     display: flex;
     gap: 20px;
     margin-bottom: 30px;
   }
 
-  .trending-item img,
+  .terbaru-item img,
   .history-item img {
     width: 180px;
     height: 120px;
@@ -104,12 +104,12 @@
     border-radius: 8px;
   }
 
-  .trending-item .text,
+  .terbaru-item .text,
   .history-item .text {
     flex: 1;
   }
 
-  .trending-item .text h3,
+  .terbaru-item .text h3,
   .history-item .text h3 {
     margin: 0;
     font-size: 20px;
@@ -190,11 +190,11 @@
   </div>
 </div>
 
-<div class="trending-section" id="trending">
+<div class="terbaru-section" id="terbaru">
   <h2>Terbaru</h2>
 
   @forelse($berita_terkini->take(2) as $berita)
-  <div class="trending-item">
+  <div class="terbaru-item">
     <img src="{{ asset('storage/' . $berita->gambar) }}" alt="{{ $berita->judul }}" onerror="this.src='/images/placeholder.jpg'">
     <div class="text">
       <h3>
@@ -207,7 +207,7 @@
     </div>
   </div>
   @empty
-  <div class="trending-item">
+  <div class="terbaru-item">
     <img src="/images/placeholder.jpg" alt="No Image">
     <div class="text">
       <h3>
