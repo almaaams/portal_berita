@@ -125,6 +125,16 @@
   .terbaru-item .text p {
     margin: 6px 0;
   }
+
+  .terbaru-item .text h3 a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .terbaru-item .text h3 a:hover {
+    color: #009dffff; 
+  }
 </style>
 
 <div class="kategori-headline">{{ ucfirst($kategori) }}</div>

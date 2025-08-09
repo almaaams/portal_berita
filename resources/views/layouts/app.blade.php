@@ -68,9 +68,9 @@
     <div class="navbar-left">
       <strong><span style="color: white">News</span></strong>
       <a href="/">Beranda</a>
-      <a href="#kategori">Kategori</a>
-      <a href="#trending">Terbaru</a>
-      <a href="#history">History</a>
+      <a href="{{ url('/#kategori') }}">Kategori</a>
+      <a href="{{ url('/#terbaru') }}">Terbaru</a>
+      <a href="{{ url('/#history') }}">History</a>
     </div>
     <div class="navbar-right">
       <!-- <input type="text" class="search-input" placeholder="Search"> -->

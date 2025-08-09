@@ -25,6 +25,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/', [HomeController::class, 'index']);
 
+Route::get('/terbaru', [HomeController::class, 'terbaru'])->name('terbaru.show');
+
 Route::get('/kategori/{kategori}', [HomeController::class, 'kategori'])->name('kategori.show');
 Route::get('/kategori', function () {
     return view('list_kategori');

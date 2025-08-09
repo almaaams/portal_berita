@@ -60,6 +60,16 @@ class HomeController extends Controller
         return view('beranda', compact('berita_terkini', 'berita_history'));
     }
 
+    public function terbaru()
+    {
+        $berita = \App\Models\Berita::orderBy('created_at', 'desc')->paginate(10);
+
+        return view('home', [
+            'berita' => $berita,
+            'judul_halaman' => 'Berita Terbaru'
+        ]);
+    }
+
     public function kategori($kategori)
     {
         // Validasi kategori
@@ -122,34 +132,27 @@ class HomeController extends Controller
 
     public function like($id)
     {
-        // Pastikan user sudah login
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu');
-        }
-
-        $user = Auth::user();
-
-        // Pastikan berita exists
+        $user = auth()->user();
         $berita = Berita::findOrFail($id);
 
-        // Cek apakah user sudah like berita ini
-        $alreadyLiked = Like::where('user_id', $user->id)
-                           ->where('berita_id', $id)
-                           ->first();
+        $like = Like::where('user_id', $user->id)
+                    ->where('berita_id', $id)
+                    ->first();
 
-        if (!$alreadyLiked) {
-            Like::create([
-                'user_id' => $user->id,
-                'berita_id' => $id,
-            ]);
-            $message = 'Berita disukai!';
+        if ($like) {
+            // Jika sudah like → unlike
+            $like->delete();
+            $message = 'Anda membatalkan like';
         } else {
-            // Opsional: Jika ingin toggle like/unlike
-            $alreadyLiked->delete();
-            $message = 'Like dibatalkan!';
+            // Jika belum like → buat like baru
+            Like::create([
+                'user_id'   => $user->id,
+                'berita_id' => $id
+            ]);
+            $message = 'Anda menyukai berita ini';
         }
 
-        return back()->with('success', $message);
+        return redirect()->back()->with('success', $message);
     }
 
     public function comment(Request $request, $id)
